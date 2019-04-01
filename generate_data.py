@@ -50,7 +50,7 @@ class GameManager:
     def update_rating(self, winner_id, loser_id, is_draw):
         winner = self.players[winner_id]
         loser = self.players[loser_id]
-        new_rating_winner, new_rating_loser = rate_1vs1(winner, loser)
+        new_rating_winner, new_rating_loser = rate_1vs1(winner, loser, is_draw)
         self.players[winner_id] = new_rating_winner
         self.players[loser_id] = new_rating_loser
 

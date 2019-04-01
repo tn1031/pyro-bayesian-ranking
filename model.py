@@ -24,26 +24,13 @@ class BayesianRanking(nn.Module):
                                  self.sigma_0 * torch.ones(self.num_players, 1))
         skill = pyro.sample('skill', skill_dist.to_event(1))
 
-        for t in range(len(x)):
-            skill_i, skill_j = skill[x[t, 0]], skill[x[t, 1]]
-            perf_diff_dist = dist.Normal(skill_i - skill_j, 2 * self.beta)
-            perf_diff = pyro.sample('perf_diff_{}'.format(t), perf_diff_dist)
-            pos = torch.sigmoid(perf_diff)
-
-            result_dist = dist.Categorical(torch.cat([_draw_prob.expand_as(pos), pos, 1-pos], dim=0))
-            pyro.sample('obs_{}'.format(t), result_dist, obs=x[t, 2])
-        """
         with pyro.plate('matching'):
             skill_i, skill_j = skill[x[:, 0]], skill[x[:, 1]]
             perf_diff_dist = dist.Normal(skill_i - skill_j, 2 * self.beta)
-            #perf_diff = pyro.sample('perf_diff_{}'.format(t), perf_diff_dist.to_event(1))
             perf_diff = pyro.sample('perf_diff', perf_diff_dist.to_event(1))
             pos = torch.sigmoid(perf_diff)
-
             result_dist = dist.Categorical(torch.cat([_draw_prob.expand_as(pos), pos, 1-pos], dim=1))
-            #pyro.sample('obs_{}'.format(t), result_dist.to_event(1), obs=x[:, 2])
-            pyro.sample('obs', result_dist.to_event(1), obs=x[:, 2][:, None])
-        """
+            pyro.sample('obs', result_dist, obs=x[:, 2])
 
     # define the guide (i.e. variational distribution) q(z|x)
     def guide(self, x):
